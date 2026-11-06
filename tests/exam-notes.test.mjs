@@ -1,0 +1,8 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { examNotes } from '../lib/exam-notes.mjs';
+import { readProgress, writeProgress } from '../lib/progress.mjs';
+test('curated topic matches the exact source exam, not just its year',()=>{const a=examNotes('https://arkusze.pl/egzamin-zawodowy-inf-03-2026-czerwiec/');const b=examNotes('https://arkusze.pl/egzamin-zawodowy-inf-03-2026-styczen/');assert.match(a.title,/Исланд/);assert.match(b.title,/автомобил/i);assert.equal(examNotes('https://arkusze.pl/not-verified/'),null)});
+test('both restaurant sessions identify the possible repeat',()=>{for(const page of ['https://arkusze.pl/egzamin-zawodowy-inf-03-2021-czerwiec/','https://arkusze.pl/egzamin-zawodowy-inf-03-2022-styczen/'])assert.match(examNotes(page).note,/похож/i)});
+test('completion persists, can be undone, and is isolated by exam',()=>{const data=new Map();const storage={getItem:k=>data.get(k)??null,setItem:(k,v)=>data.set(k,v),removeItem:k=>data.delete(k)};const id='exam one';assert.equal(readProgress(storage,id),'unmarked');assert.equal(writeProgress(storage,id,true),true);assert.equal(readProgress(storage,id),'done');assert.equal(readProgress(storage,'other'),'unmarked');assert.equal(writeProgress(storage,id,false),true);assert.equal(readProgress(storage,id),'unmarked')});
+test('unavailable storage is reported rather than pretending to save',()=>{const storage={getItem(){throw Error('blocked')},setItem(){throw Error('blocked')},removeItem(){throw Error('blocked')}};assert.equal(readProgress(storage,'exam'),'unavailable');assert.equal(writeProgress(storage,'exam',true),false)});
