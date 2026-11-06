@@ -13,7 +13,8 @@ const safe=(u:string)=>sourceUrl(u);
 class StorageFull extends Error {}
 async function requireOk(result:{error:unknown}){if(result.error)throw result.error}
 Deno.serve(async(req:Request)=>{
- if(req.method!=='POST'||!service||req.headers.get('Authorization')!==`Bearer ${service}`)return new Response('Unauthorized',{status:401});
+ if(req.method!=='POST'||!service)return new Response('Unauthorized',{status:401});
+ const auth=await db.rpc('verify_sync_secret',{p_name:'worker',p_token:req.headers.get('x-sync-token')||''});if(auth.error||auth.data!==true)return new Response('Unauthorized',{status:401});
  const claim=await db.rpc('claim_sync_job');if(claim.error)return new Response('Queue error',{status:500});const job=claim.data?.[0];if(!job)return Response.json({status:'idle'});
  let current:Task|null=null;
  try{
