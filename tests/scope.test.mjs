@@ -1,0 +1,6 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { isExamPage, classify, fileMetadata } from '../lib/scope.mjs';
+test('only INF.03 session pages',()=>{assert.equal(isExamPage('https://arkusze.pl/egzamin-zawodowy-inf-03-2026-czerwiec/'),true); for (const u of ['https://arkusze.pl/egzamin-zawodowy-inf-04-2026-czerwiec/','https://evil.test/egzamin-zawodowy-inf-03-2026-czerwiec/','https://arkusze.pl/egzamin-zawodowy-ee-09-2022-styczen/']) assert.equal(isExamPage(u),false)});
+test('file classification including archives',()=>{assert.equal(classify('https://arkusze.pl/zawodowy/inf03-2026-czerwiec-egzamin-zawodowy-praktyczny.pdf'), 'arkusz');assert.equal(classify('https://arkusze.pl/zawodowy/inf03-2026-czerwiec-egzamin-zawodowy-praktyczny-zasady-oceniania.pdf'),'klucz');assert.equal(classify('https://arkusze.pl/zawodowy/inf03-2026-czerwiec-egzamin-zawodowy-praktyczny-zalaczniki.zip'),'materialy_pomocnicze');assert.equal(classify('https://evil.test/inf03.zip'),null);assert.equal(classify('https://arkusze.pl/zawodowy/inf04.pdf'),null)});
+test('year and polish session',()=>assert.deepEqual(fileMetadata('https://arkusze.pl/egzamin-zawodowy-inf-03-2025-styczen/'),{year:2025,session:'styczeń'}));

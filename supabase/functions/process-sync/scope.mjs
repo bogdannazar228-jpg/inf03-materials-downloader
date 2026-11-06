@@ -1,0 +1,5 @@
+const HOST='arkusze.pl';
+export function sourceUrl(value){try{const u=new URL(value); if(u.protocol!=='https:' || u.hostname!==HOST || u.username || u.password || u.port) return null; u.hash=''; return u.toString()}catch{return null}}
+export function isExamPage(value){const s=sourceUrl(value); return !!s && /^\/egzamin-zawodowy-inf[-.]?0?3-(?:20\d\d)-(?:styczen|czerwiec|sierpien)\/?$/i.test(new URL(s).pathname)}
+export function classify(value){const s=sourceUrl(value); if(!s)return null;const path=new URL(s).pathname.toLowerCase();if(!/^\/zawodowy\/inf[-.]?0?3(?:[-_.]|$)/.test(path))return null;if(/\.(zip|7z)$/.test(path))return 'materialy_pomocnicze';if(!/\.pdf$/.test(path))return null;return /zasady[-_]?oceniania|odpowiedzi|klucz/.test(path)?'klucz':'arkusz'}
+export function fileMetadata(value){const s=sourceUrl(value);const match=s && new URL(s).pathname.match(/(20\d\d)-(styczen|czerwiec|sierpien)/i);if(!match)throw new Error('Не удалось определить год и сессию');return {year:Number(match[1]),session:{styczen:'styczeń',czerwiec:'czerwiec',sierpien:'sierpień'}[match[2].toLowerCase()]}}
